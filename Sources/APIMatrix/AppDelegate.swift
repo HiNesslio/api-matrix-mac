@@ -24,7 +24,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         popover.behavior = .transient
         let contentView = MenuBarView()
             .environment(AppState.shared.keychain)
-            .preferredColorScheme(.light)
         popover.contentViewController = NSHostingController(rootView: contentView)
         self.popover = popover
     }
@@ -49,5 +48,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             window.makeKeyAndOrderFront(nil)
             NSApp.activate(ignoringOtherApps: true)
         }
+    }
+
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows: Bool) -> Bool {
+        openMainWindow()
+        return true
     }
 }

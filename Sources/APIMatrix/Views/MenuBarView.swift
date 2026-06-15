@@ -69,7 +69,19 @@ struct MenuBarView: View {
                 .buttonStyle(.plain)
             }
             .padding(.horizontal, 12)
-            .padding(.vertical, 10)
+            .padding(.vertical, 6)
+
+            Button {
+                NSApp.terminate(nil)
+            } label: {
+                Text("Quit")
+                    .font(.system(size: 11))
+                    .frame(maxWidth: .infinity)
+                    .padding(6)
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(.secondary)
+            .padding(.bottom, 8)
         }
         .frame(width: 360)
         .sheet(isPresented: $showAdd) {

@@ -1,4 +1,5 @@
 import SwiftUI
+import ServiceManagement
 
 struct SettingsView: View {
     @Environment(KeychainService.self) private var keychain
@@ -32,6 +33,15 @@ struct SettingsView: View {
             }
 
             Toggle("Always use light mode", isOn: $lightModeOnly)
+
+            Toggle("Launch at login", isOn: .init(
+                get: { SMAppService.mainApp.status == .enabled },
+                set: { enabled in
+                    try? enabled
+                        ? SMAppService.mainApp.register()
+                        : SMAppService.mainApp.unregister()
+                }
+            ))
 
             Text("Auto-lock hides revealed keys after inactivity.")
                 .font(.system(size: 10))
