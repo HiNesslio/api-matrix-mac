@@ -7,10 +7,12 @@ build:
 run:
 	swift run
 
+BINARY = $(shell find .build -path "*/release/API Matrix" -type f 2>/dev/null | head -1)
+
 app-bundle:
 	mkdir -p "Build/$(APP_NAME).app/Contents/MacOS"
 	mkdir -p "Build/$(APP_NAME).app/Contents/Resources"
-	cp -f .build/release/APIMatrix "Build/$(APP_NAME).app/Contents/MacOS/$(APP_NAME)"
+	cp -f "$(BINARY)" "Build/$(APP_NAME).app/Contents/MacOS/$(APP_NAME)"
 	cp -f Sources/APIMatrix/Info.plist "Build/$(APP_NAME).app/Contents/Info.plist"
 	cp -r Resources/* "Build/$(APP_NAME).app/Contents/Resources/" 2>/dev/null || true
 
