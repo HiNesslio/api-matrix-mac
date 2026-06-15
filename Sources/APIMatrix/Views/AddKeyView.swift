@@ -67,6 +67,7 @@ struct AddKeyView: View {
                 }
             }
             .labelsHidden()
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 
