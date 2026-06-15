@@ -10,7 +10,8 @@ let package = Package(
     targets: [
         .executableTarget(
             name: "APIMatrix",
-            path: "Sources/APIMatrix"
+            path: "Sources/APIMatrix",
+            resources: [.process("Resources")]
         )
     ]
 )

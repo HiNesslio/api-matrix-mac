@@ -2,7 +2,6 @@ import SwiftUI
 
 struct MenuBarView: View {
     @Environment(KeychainService.self) private var keychain
-    @Environment(\.openWindow) private var openWindow
     @State private var searchText = ""
     @State private var showAdd = false
 
@@ -53,7 +52,7 @@ struct MenuBarView: View {
                 .buttonStyle(.plain)
 
                 Button {
-                    openWindow(id: "main-window")
+                    (NSApp.delegate as? AppDelegate)?.openMainWindow()
                 } label: {
                     Text("Open Full App")
                         .font(.system(size: 12, weight: .medium))

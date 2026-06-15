@@ -34,7 +34,7 @@ struct DetailPanelView: View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 6) {
-                    statusDot
+                    ProviderIconView(key.provider, size: 14)
                     Text(provider?.name ?? key.provider)
                         .font(.system(size: 11, weight: .semibold))
                         .foregroundStyle(.secondary)
@@ -51,12 +51,6 @@ struct DetailPanelView: View {
                 deleteButton
             }
         }
-    }
-
-    private var statusDot: some View {
-        Circle()
-            .fill(key.isExpired ? Color.red : Color.green)
-            .frame(width: 6, height: 6)
     }
 
     private var keyDisplay: some View {

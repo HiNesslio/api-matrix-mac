@@ -25,6 +25,15 @@ struct MainWindowView: View {
             }
         }
         .navigationTitle("API Matrix")
+        .toolbar {
+            ToolbarItem {
+                Button {
+                    showAdd = true
+                } label: {
+                    Label("Add Key", systemImage: "plus")
+                }
+            }
+        }
         .sheet(isPresented: $showAdd) {
             AddKeyView()
         }

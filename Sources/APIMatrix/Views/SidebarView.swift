@@ -27,7 +27,7 @@ struct SidebarView: View {
                                         .foregroundStyle(.secondary)
                                 }
                             } icon: {
-                                statusIcon(for: key)
+                                ProviderIconView(key.provider, size: 14)
                             }
                             .tag(key)
                         }
@@ -39,10 +39,4 @@ struct SidebarView: View {
         .frame(minWidth: 200)
     }
 
-    @ViewBuilder
-    private func statusIcon(for key: ApiKeyItem) -> some View {
-        Circle()
-            .fill(key.isExpired ? Color.red : Color.green)
-            .frame(width: 6, height: 6)
-    }
 }

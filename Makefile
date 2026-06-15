@@ -14,7 +14,7 @@ app-bundle:
 	mkdir -p "Build/$(APP_NAME).app/Contents/Resources"
 	cp -f "$(BINARY)" "Build/$(APP_NAME).app/Contents/MacOS/$(APP_NAME)"
 	cp -f Sources/APIMatrix/Info.plist "Build/$(APP_NAME).app/Contents/Info.plist"
-	cp -r Resources/* "Build/$(APP_NAME).app/Contents/Resources/" 2>/dev/null || true
+	cp -r Sources/APIMatrix/Resources/* "Build/$(APP_NAME).app/Contents/Resources/" 2>/dev/null || true
 
 release: build app-bundle
 	cd Build && zip -ry "$(APP_NAME).zip" "$(APP_NAME).app"

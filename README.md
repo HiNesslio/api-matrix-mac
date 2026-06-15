@@ -50,7 +50,18 @@ open Build/API\ Matrix.app
 
 ## Sync with iOS
 
-Keys are stored in a shared Keychain access group. If you have the iOS app installed on the same Apple ID, keys sync automatically.
+Keys can be synced between the macOS and iOS apps in two ways:
+
+### Automatic Sync (Developer Account Required)
+
+Both apps use the same Keychain access group (`com.apimatrix.app`). If you sign both apps with the same Apple Developer Team ID, keys sync automatically via iCloud Keychain.
+
+### Manual Sync (No Developer Account)
+
+1. On iOS: Open Settings → Export Backup → copies JSON to clipboard
+2. On macOS: Open Settings → Data → Import Keys → pastes from clipboard
+
+Or vice versa — export from macOS, import on iOS.
 
 ## License
 

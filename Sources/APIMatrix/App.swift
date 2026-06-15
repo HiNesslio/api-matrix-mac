@@ -2,8 +2,7 @@ import SwiftUI
 
 @main
 struct APIMatrixApp: App {
-    @State private var keychain = KeychainService()
-    @State private var autoLock = AutoLockService()
+    @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @AppStorage("lightModeOnly") private var lightModeOnly = true
 
     private var colorScheme: ColorScheme? {
@@ -11,22 +10,9 @@ struct APIMatrixApp: App {
     }
 
     var body: some Scene {
-        MenuBarExtra {
-            MenuBarView()
-                .environment(keychain)
-                .onAppear { autoLock.startMonitoring() }
-                .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
-                    autoLock.registerActivity()
-                }
-                .preferredColorScheme(colorScheme)
-        } label: {
-            Label("API Matrix", systemImage: "key.icloud.fill")
-        }
-        .menuBarExtraStyle(.window)
-
         Window("API Matrix", id: "main-window") {
             MainWindowView()
-                .environment(keychain)
+                .environment(AppState.shared.keychain)
                 .onAppear { NSApp.keyWindow?.makeFirstResponder(nil) }
                 .preferredColorScheme(colorScheme)
         }
@@ -50,7 +36,19 @@ struct APIMatrixApp: App {
 
         Settings {
             SettingsView()
-                .environment(keychain)
+                .environment(AppState.shared.keychain)
         }
+    }
+}
+
+final class AppState: @unchecked Sendable {
+    static let shared = AppState()
+    let keychain = KeychainService()
+    let autoLock = AutoLockService()
+}
+
+extension NSApplication {
+    @objc func showMainWindow() {
+        NSApp.sendAction(Selector(("showMainWindow:")), to: nil, from: nil)
     }
 }

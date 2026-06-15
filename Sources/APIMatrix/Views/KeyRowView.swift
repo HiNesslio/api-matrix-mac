@@ -8,7 +8,7 @@ struct KeyRowView: View {
 
     var body: some View {
         HStack(spacing: 10) {
-            statusDot
+            ProviderIconView(key.provider, size: 18)
             VStack(alignment: .leading, spacing: 1) {
                 Text(provider?.name ?? key.provider)
                     .font(.system(size: 12, weight: .semibold))
@@ -51,12 +51,6 @@ struct KeyRowView: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
-    }
-
-    private var statusDot: some View {
-        Circle()
-            .fill(key.isExpired ? Color.red : Color.green)
-            .frame(width: 6, height: 6)
     }
 
     private func copyToClipboard(_ text: String) {

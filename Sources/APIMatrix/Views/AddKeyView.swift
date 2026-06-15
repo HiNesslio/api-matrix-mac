@@ -19,8 +19,7 @@ struct AddKeyView: View {
                         Text("Select...").tag(nil as ProviderDef?)
                         ForEach(allProviders) { provider in
                             HStack {
-                                Image(systemName: provider.symbolName)
-                                    .foregroundStyle(.secondary)
+                                ProviderIconView(provider.id, size: 18)
                                 Text(provider.name)
                             }.tag(provider as ProviderDef?)
                         }
