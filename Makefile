@@ -14,6 +14,10 @@ app-bundle:
 	mkdir -p "Build/$(APP_NAME).app/Contents/Resources"
 	cp -f "$(BINARY)" "Build/$(APP_NAME).app/Contents/MacOS/$(APP_NAME)"
 	cp -f Sources/APIMatrix/Info.plist "Build/$(APP_NAME).app/Contents/Info.plist"
+	# SwiftPM resource bundle (needed by Bundle.module, SVGs flat inside)
+	mkdir -p "Build/$(APP_NAME).app/Contents/API Matrix_APIMatrix.bundle"
+	cp Sources/APIMatrix/Resources/ProviderIcons/*.svg "Build/$(APP_NAME).app/Contents/API Matrix_APIMatrix.bundle/"
+	# Legacy Resources/ProviderIcons/ for Bundle.main fallback
 	cp -r Sources/APIMatrix/Resources/* "Build/$(APP_NAME).app/Contents/Resources/" 2>/dev/null || true
 
 release: build app-bundle

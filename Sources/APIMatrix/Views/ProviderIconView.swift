@@ -13,7 +13,7 @@ struct ProviderIconView: View {
     }
 
     var body: some View {
-        if let image = loadSVG(providerID) {
+        if let image = Self.loadSVG(providerID) {
             Image(nsImage: image)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
@@ -34,19 +34,47 @@ struct ProviderIconView: View {
             )
     }
 
-    private func loadSVG(_ id: String) -> NSImage? {
-        guard let url = Bundle.module.url(forResource: id, withExtension: "svg", subdirectory: "ProviderIcons") else {
-            log.warning("SVG not found for \(id, privacy: .public) in Bundle.module")
-            log.debug("Bundle.main=\(Bundle.main.bundlePath, privacy: .public)")
-            log.debug("Bundle.module=\(Bundle.module.bundlePath, privacy: .public)")
-            return nil
+    private static var cache: [String: NSImage] = [:]
+
+    private static func loadSVG(_ id: String) -> NSImage? {
+        if let cached = cache[id] { return cached }
+
+        // Try Bundle.module (SwiftPM resource bundle — SVGs are flat)
+        let moduleBundle = findSwiftPMResourceBundle()
+        if let b = moduleBundle, let url = b.url(forResource: id, withExtension: "svg") {
+            if let image = NSImage(contentsOf: url) { cache[id] = image; return image }
         }
-        if let image = NSImage(contentsOf: url) {
-            log.debug("SVG loaded for \(id, privacy: .public) from \(url.lastPathComponent)")
-            return image
-        } else {
-            log.warning("SVG found but NSImage nil for \(id, privacy: .public)")
-            return nil
+
+        // Try Bundle.main with ProviderIcons subdirectory (Makefile .app bundle)
+        if let url = Bundle.main.url(forResource: id, withExtension: "svg", subdirectory: "ProviderIcons") {
+            if let image = NSImage(contentsOf: url) { cache[id] = image; return image }
         }
+
+        // Try Bundle.main flat
+        if let url = Bundle.main.url(forResource: id, withExtension: "svg") {
+            if let image = NSImage(contentsOf: url) { cache[id] = image; return image }
+        }
+
+        log.warning("SVG not found for \(id, privacy: .public)")
+        return nil
+    }
+
+    /// Safe alternative to Bundle.module that doesn't fatalError when the resource bundle is missing.
+    private static func findSwiftPMResourceBundle() -> Bundle? {
+        // The generated Bundle.module accessor looks for:
+        //   mainPath = Bundle.main.bundleURL + "API Matrix_APIMatrix.bundle"
+        //   buildPath = hardcoded absolute path in .build/
+        // We replicate this lookup safely using Bundle(path:).
+
+        let mainPath = Bundle.main.bundleURL.appendingPathComponent("API Matrix_APIMatrix.bundle").path
+        if let bundle = Bundle(path: mainPath) { return bundle }
+
+        let home = NSHomeDirectory()
+        for variant in ["debug", "release"] {
+            let buildPath = "\(home)/mvp/api-matrix-mac/.build/arm64-apple-macosx/\(variant)/API Matrix_APIMatrix.bundle"
+            if let bundle = Bundle(path: buildPath) { return bundle }
+        }
+
+        return nil
     }
 }
