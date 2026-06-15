@@ -10,6 +10,8 @@ struct AddKeyView: View {
     @State private var expiresAt: Date?
     @State private var hasExpiry = false
     @State private var notes = ""
+    @State private var showingAlert = false
+    @State private var alertMessage = ""
 
     var body: some View {
         NavigationStack {
@@ -48,43 +50,24 @@ struct AddKeyView: View {
             }
         }
         .frame(width: 420, height: 480)
+        .alert(alertMessage, isPresented: $showingAlert) {
+            Button("OK") { dismiss() }
+        }
     }
 
     private var providerPicker: some View {
-        Menu {
-            ForEach(allProviders) { provider in
-                Button {
-                    selectedProvider = provider
-                } label: {
-                    HStack {
-                        ProviderIconView(provider.id, size: 18)
-                        Text(provider.name)
-                    }
+        HStack {
+            if let p = selectedProvider {
+                ProviderIconView(p.id, size: 18)
+            }
+            Picker("Provider", selection: $selectedProvider) {
+                Text("Select...").tag(nil as ProviderDef?)
+                ForEach(allProviders) { provider in
+                    Text(provider.name).tag(provider as ProviderDef?)
                 }
             }
-        } label: {
-            HStack {
-                if let p = selectedProvider {
-                    ProviderIconView(p.id, size: 18)
-                    Text(p.name)
-                        .foregroundStyle(.primary)
-                } else {
-                    Text("Select...")
-                        .foregroundStyle(.secondary)
-                }
-                Spacer()
-                Image(systemName: "chevron.up.chevron.down")
-                    .font(.system(size: 10))
-                    .foregroundStyle(.secondary)
-            }
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(Color(.textBackgroundColor))
-            .clipShape(RoundedRectangle(cornerRadius: 6))
-            .overlay(RoundedRectangle(cornerRadius: 6).stroke(Color(.separatorColor)))
+            .labelsHidden()
         }
-        .menuStyle(.borderlessButton)
-        .fixedSize(horizontal: false, vertical: true)
     }
 
     private var isValid: Bool {
@@ -103,6 +86,11 @@ struct AddKeyView: View {
             notes: notes.isEmpty ? nil : notes.trimmingCharacters(in: .whitespacesAndNewlines)
         )
         keychain.saveKey(key)
-        dismiss()
+        if let error = keychain.lastError {
+            alertMessage = error
+            showingAlert = true
+        } else {
+            dismiss()
+        }
     }
 }
