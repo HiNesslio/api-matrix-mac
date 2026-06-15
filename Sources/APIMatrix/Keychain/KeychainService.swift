@@ -22,13 +22,18 @@ final class KeychainService {
             let ids = try readMeta()
             keys = try ids.compactMap { try readKey(id: $0) }
             lastError = nil
-        } catch {
-            if case KeychainError.itemNotFound = error {
+        } catch let e as KeychainError {
+            if case .unexpectedStatus(let s) = e, s == errSecItemNotFound {
+                keys = []
+                lastError = nil
+            } else if case .itemNotFound = e {
                 keys = []
                 lastError = nil
             } else {
-                lastError = error.localizedDescription
+                lastError = e.localizedDescription
             }
+        } catch {
+            lastError = error.localizedDescription
         }
     }
 
@@ -39,10 +44,11 @@ final class KeychainService {
     func saveKey(_ key: ApiKeyItem) {
         do {
             try writeKey(key)
-            var ids = try readMeta()
+            let ids = (try? readMeta()) ?? []
             if !ids.contains(key.id) {
-                ids.append(key.id)
-                try writeMeta(ids)
+                var newIds = ids
+                newIds.append(key.id)
+                try writeMeta(newIds)
             }
             loadAllKeys()
         } catch {
@@ -53,7 +59,7 @@ final class KeychainService {
     func deleteKey(id: String) {
         do {
             try deleteKeyFromKeychain(id: id)
-            var ids = try readMeta()
+            var ids = (try? readMeta()) ?? []
             ids.removeAll { $0 == id }
             try writeMeta(ids)
             loadAllKeys()

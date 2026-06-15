@@ -11,6 +11,7 @@ let package = Package(
         .executableTarget(
             name: "APIMatrix",
             path: "Sources/APIMatrix",
+            exclude: ["Info.plist"],
             resources: [.process("Resources")]
         )
     ]
