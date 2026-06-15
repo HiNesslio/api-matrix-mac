@@ -1,12 +1,18 @@
 import Foundation
 import Security
+import OSLog
+
+private let log = Logger(subsystem: "com.apimatrix.mac", category: "Keychain")
 
 @Observable
 final class KeychainService {
     private let metaKey = "apikeyvault_keys_meta"
     private let keyPrefix = "apikeyvault_key_"
     private let accessGroup: String? = {
-        guard let teamId = Bundle.main.infoDictionary?["AppIdentifierPrefix"] as? String else { return nil }
+        guard let teamId = Bundle.main.infoDictionary?["AppIdentifierPrefix"] as? String else {
+            log.warning("AppIdentifierPrefix not found — running unsigned")
+            return nil
+        }
         return "\(teamId)com.apimatrix.app"
     }()
 
@@ -14,26 +20,32 @@ final class KeychainService {
     var lastError: String?
 
     init() {
+        log.debug("KeychainService init, accessGroup=\(self.accessGroup ?? "nil", privacy: .public)")
         loadAllKeys()
     }
 
     func loadAllKeys() {
         do {
             let ids = try readMeta()
+            log.debug("Meta IDs: \(ids.count)")
             keys = try ids.compactMap { try readKey(id: $0) }
+            log.debug("Loaded \(self.keys.count) keys")
             lastError = nil
         } catch let e as KeychainError {
             if case .unexpectedStatus(let s) = e, s == errSecItemNotFound {
                 keys = []
                 lastError = nil
+                log.debug("No existing keys found")
             } else if case .itemNotFound = e {
                 keys = []
                 lastError = nil
             } else {
                 lastError = e.localizedDescription
+                log.error("loadAllKeys error: \(e.localizedDescription, privacy: .public)")
             }
         } catch {
             lastError = error.localizedDescription
+            log.error("loadAllKeys generic error: \(error.localizedDescription, privacy: .public)")
         }
     }
 
@@ -42,17 +54,23 @@ final class KeychainService {
     }
 
     func saveKey(_ key: ApiKeyItem) {
+        log.debug("saveKey: \(key.id, privacy: .public)")
         do {
             try writeKey(key)
+            log.debug("writeKey succeeded")
             let ids = (try? readMeta()) ?? []
+            log.debug("readMeta returned \(ids.count) existing IDs")
             if !ids.contains(key.id) {
                 var newIds = ids
                 newIds.append(key.id)
                 try writeMeta(newIds)
+                log.debug("writeMeta succeeded, IDs now: \(newIds.count)")
             }
             loadAllKeys()
+            log.debug("saveKey complete — keys count: \(self.keys.count)")
         } catch {
             lastError = error.localizedDescription
+            log.error("saveKey failed: \(error.localizedDescription, privacy: .public)")
         }
     }
 
@@ -127,6 +145,7 @@ final class KeychainService {
         var result: AnyObject?
         let status = SecItemCopyMatching(query as CFDictionary, &result)
         guard status == errSecSuccess else {
+            log.error("readKeychain(\(key, privacy: .public)) status=\(status)")
             throw KeychainError.unexpectedStatus(status)
         }
         guard let data = result as? Data else {
@@ -146,13 +165,16 @@ final class KeychainService {
         ]
         let status = SecItemCopyMatching(query as CFDictionary, nil)
         if status == errSecSuccess {
+            log.debug("writeKeychain(\(key, privacy: .public)) exists — updating")
             SecItemUpdate(query as CFDictionary, attributes as CFDictionary)
         } else {
             var newQuery = query
             newQuery[kSecValueData as String] = data
             newQuery[kSecAttrAccessible as String] = kSecAttrAccessibleWhenUnlockedThisDeviceOnly
+            log.debug("writeKeychain(\(key, privacy: .public)) new — adding")
             let addStatus = SecItemAdd(newQuery as CFDictionary, nil)
             guard addStatus == errSecSuccess else {
+                log.error("writeKeychain(\(key, privacy: .public)) add failed status=\(addStatus)")
                 throw KeychainError.unexpectedStatus(addStatus)
             }
         }

@@ -1,4 +1,7 @@
 import SwiftUI
+import OSLog
+
+private let log = Logger(subsystem: "com.apimatrix.mac", category: "Icon")
 
 struct ProviderIconView: View {
     let providerID: String
@@ -33,8 +36,17 @@ struct ProviderIconView: View {
 
     private func loadSVG(_ id: String) -> NSImage? {
         guard let url = Bundle.module.url(forResource: id, withExtension: "svg", subdirectory: "ProviderIcons") else {
+            log.warning("SVG not found for \(id, privacy: .public) in Bundle.module")
+            log.debug("Bundle.main=\(Bundle.main.bundlePath, privacy: .public)")
+            log.debug("Bundle.module=\(Bundle.module.bundlePath, privacy: .public)")
             return nil
         }
-        return NSImage(contentsOf: url)
+        if let image = NSImage(contentsOf: url) {
+            log.debug("SVG loaded for \(id, privacy: .public) from \(url.lastPathComponent)")
+            return image
+        } else {
+            log.warning("SVG found but NSImage nil for \(id, privacy: .public)")
+            return nil
+        }
     }
 }
